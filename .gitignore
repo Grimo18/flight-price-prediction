@@ -54,6 +54,7 @@ env/
 *.jpeg
 *.pdf
 *.txt
+*.md5
 !README.md
 !requirements.txt
 
