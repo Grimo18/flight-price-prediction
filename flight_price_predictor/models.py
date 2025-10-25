@@ -85,7 +85,7 @@ class MLModels:
         return X, y
     
     
-    def train_model(self, X, y, test_size=0.2):
+    def train_model(self, X, y, test_size=0.2, currency_symbol='€'):
         """
         Addestra il modello di Random Forest.
         
@@ -93,6 +93,7 @@ class MLModels:
             X (pd.DataFrame): Features
             y (pd.Series): Target price
             test_size (float): Proporzione test set
+            currency_symbol (str): Simbolo valuta per output
         
         Returns:
             tuple: (model, X_test, y_test, metrics)
@@ -133,8 +134,8 @@ class MLModels:
             'mse': mse
         }
         
-        print(f"    MAE: €{mae:.2f}")
-        print(f"    RMSE: €{rmse:.2f}")
+        print(f"    MAE: {currency_symbol}{mae:.2f}")
+        print(f"    RMSE: {currency_symbol}{rmse:.2f}")
         print(f"    R² (Test Set): {r2:.4f}")
         
         # Cross-validation

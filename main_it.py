@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 MAIN ENTRY POINT- VERSIONE ITALIANA
 =================================================
@@ -78,6 +79,18 @@ def main():
                 predictor = FlightPricePredictor(None, lang='it')
                 predictor.df = df_unified
                 
+                # Rileva e richiedi valuta se necessario
+                detected, has_symbol = predictor.detect_currency()
+                if detected is None or not has_symbol:
+                    print("\n[?] Valuta non rilevata automaticamente.")
+                    print("Scegli la valuta:\n  1. € (Euro)\n  2. $ (Dollaro)\n  3. ₹ (Rupia Indiana)\n  4. £ (Sterlina)")
+                    choice = input("Scelta (1/2/3/4): ").strip()
+                    currency_map = {'1': '€', '2': '$', '3': '₹', '4': '£'}
+                    predictor.currency_symbol = currency_map.get(choice, '€')
+                else:
+                    predictor.currency_symbol = detected
+                print(f"💰 Valuta selezionata: {predictor.currency_symbol}")
+                
                 rows, cols = df_unified.shape
                 print(f"✅ Dataset unificato caricato: {rows} righe, {cols} colonne")
                 print(DATASET_PRONTO)
@@ -102,6 +115,18 @@ def main():
                 # Crea predittore con il dataset caricato (lingua italiana)
                 predictor = FlightPricePredictor(None, lang='it')
                 predictor.df = df
+                
+                # Rileva e richiedi valuta se necessario
+                detected, has_symbol = predictor.detect_currency()
+                if detected is None or not has_symbol:
+                    print("\n[?] Valuta non rilevata automaticamente.")
+                    print("Scegli la valuta:\n  1. € (Euro)\n  2. $ (Dollaro)\n  3. ₹ (Rupia Indiana)\n  4. £ (Sterlina)")
+                    choice = input("Scelta (1/2/3/4): ").strip()
+                    currency_map = {'1': '€', '2': '$', '3': '₹', '4': '£'}
+                    predictor.currency_symbol = currency_map.get(choice, '€')
+                else:
+                    predictor.currency_symbol = detected
+                print(f"💰 Valuta selezionata: {predictor.currency_symbol}")
                 
                 rows, cols = df.shape
                 print(DATASET_CARICATO.format(rows=rows, cols=cols))

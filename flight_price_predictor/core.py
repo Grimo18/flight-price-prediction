@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Core Module
 ===========
@@ -143,39 +144,33 @@ class FlightPricePredictor:
         Rileva automaticamente la valuta dal dataset analizzando i valori di prezzo.
         
         Returns:
-            str: Simbolo della valuta rilevata (€, $, ₹, £, etc.)
+            tuple: (currency_symbol, has_explicit_symbol)
+            - currency_symbol: str (€, $, ₹, £) or None se non trovato
+            - has_explicit_symbol: bool (True se trovato simbolo, False se dedotto/sconosciuto)
         """
         if self.df is None or 'price' not in self.df.columns:
-            return '€'
+            return None, False
         
         # Prendi un campione di prezzi
         sample = self.df['price'].dropna().head(100)
+        
+        if len(sample) == 0:
+            return None, False
         
         # Controlla se ci sono simboli di valuta nelle stringhe
         sample_str = sample.astype(str)
         
         if sample_str.str.contains('₹', regex=False).any():
-            return '₹'
+            return '₹', True
         elif sample_str.str.contains('$', regex=False).any():
-            return '$'
+            return '$', True
         elif sample_str.str.contains('£', regex=False).any():
-            return '£'
+            return '£', True
         elif sample_str.str.contains('€', regex=False).any():
-            return '€'
+            return '€', True
         
-        # Se non ci sono simboli, cerca di dedurre dalla grandezza media
-        try:
-            mean_price = pd.to_numeric(sample, errors='coerce').mean()
-            
-            # Range tipici per valuta (euristica)
-            if mean_price > 50000:  # Probabilmente Rupie indiane
-                return '₹'
-            elif mean_price > 10000:  # Probabilmente Dollari o Euro
-                return '$'  # Default a dollari per valori alti
-            else:
-                return '€'  # Default a euro per valori bassi
-        except:
-            return '€'
+        # Se non ci sono simboli, non è sicuro - ritorna None per segnalare all'utente
+        return None, False
     
     
     def load_data(self):
@@ -185,18 +180,34 @@ class FlightPricePredictor:
             currency_detected = "💰 Valuta rilevata: {}"
             loaded_msg = "✅ Dataset caricato: {} righe, {} colonne"
             columns_label = "Colonne disponibili: {}\n"
+            ask_currency = "\n[?] Valuta non rilevata automaticamente."
+            currency_options = "Scegli la valuta:\n  1. € (Euro)\n  2. $ (Dollaro)\n  3. ₹ (Rupia Indiana)\n  4. £ (Sterlina)\nScelta (1/2/3/4): "
+            currency_map_it = {'1': '€', '2': '$', '3': '₹', '4': '£'}
         else:
             loading_msg = "📊 Loading dataset..."
             currency_detected = "💰 Currency detected: {}"
             loaded_msg = "✅ Dataset loaded: {} rows, {} columns"
             columns_label = "Available columns: {}\n"
+            ask_currency = "\n[?] Currency not auto-detected."
+            currency_options = "Choose currency:\n  1. € (Euro)\n  2. $ (Dollar)\n  3. ₹ (Indian Rupee)\n  4. £ (Pound)\nChoice (1/2/3/4): "
+            currency_map_it = {'1': '€', '2': '$', '3': '₹', '4': '£'}
         
         print(loading_msg)
         self.df = pd.read_csv(self.data_path)
         self.df = self.df.loc[:, ~self.df.columns.str.contains('^unnamed', case=False)]
         
         # Rileva la valuta automaticamente
-        self.currency_symbol = self.detect_currency()
+        detected, has_symbol = self.detect_currency()
+        
+        # Se non ha trovato simboli espliciti o rilevamento fallito, chiedi all'utente
+        if detected is None or not has_symbol:
+            print(ask_currency)
+            choice = input(currency_options).strip()
+            self.currency_symbol = currency_map_it.get(choice, '€')
+        else:
+            # Se ha trovato simboli, usa quello rilevato
+            self.currency_symbol = detected
+        
         print(currency_detected.format(self.currency_symbol))
         
         print(loaded_msg.format(self.df.shape[0], self.df.shape[1]))
@@ -532,7 +543,7 @@ Skewness: {self.df_cleaned['price'].skew():.2f}
         print(title)
         print("="*60)
         
-        model, X_test, y_test, metrics = self.ml_models.train_model(X, y)
+        model, X_test, y_test, metrics = self.ml_models.train_model(X, y, currency_symbol=self.currency_symbol)
         
         # Feature importance
         print(f"\n{top_features}")
@@ -605,8 +616,13 @@ Skewness: {self.df_cleaned['price'].skew():.2f}
                 return None
         
         # Rileva la valuta se non è stata ancora rilevata
-        if not hasattr(self, 'currency_symbol') or self.currency_symbol == '€':
-            self.currency_symbol = self.detect_currency()
+        if not hasattr(self, 'currency_symbol') or self.currency_symbol is None:
+            detected, has_symbol = self.detect_currency()
+            if detected is None or not has_symbol:
+                # Se non rilevata, usa fallback
+                self.currency_symbol = '€'
+            else:
+                self.currency_symbol = detected
         
         # Messaggi multilingua
         if self.lang == 'it':
