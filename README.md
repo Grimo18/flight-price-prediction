@@ -5,9 +5,9 @@ A complete **end-to-end Machine Learning pipeline** for predicting flight prices
 ## 🎯 Key Features
 
 - **🤖 ML Ensemble Model**: Random Forest Regressor trained on 300K+ flight records
-- **📊 Ground Truth Validation**: MAE €161.27 on test set (20K flights)
+- **📊 Ground Truth Validation**: MAE ₹161.27* on test set (20K flights)
 - **🌍 Multilingual Support**: Italian & English interfaces
-- **💱 Auto-Detect Currency**: Automatically identifies price symbols (€, $, ₹, £)
+- **💱 Smart Currency Detection**: Auto-detects symbols (€, $, ₹, £) or asks user when ambiguous
 - **📈 Data Visualization**: Price distribution, seasonality trends, feature importance
 - **🎯 Smart Recommendations**: Auto-selects cheapest airline per route
 - **🔄 Robust Data Cleaning**: Handles corrupted airline names, duplicates, outliers
@@ -18,10 +18,12 @@ A complete **end-to-end Machine Learning pipeline** for predicting flight prices
 | Metric | Value |
 |--------|-------|
 | **R² Score** | 0.9987 (99.87%) |
-| **MAE** | €161.27 |
-| **RMSE** | €871.33 |
+| **MAE** | ₹161.27* |
+| **RMSE** | ₹871.33* |
 | **Test Set Size** | 60,000 flights |
 | **Training Set Size** | 240,000 flights |
+
+*Currency-dependent values (example shown in ₹). Actual values scale with dataset's native currency or user selection.
 
 ---
 
@@ -137,7 +139,7 @@ Note: CSV files are NOT tracked in Git (.gitignore)
 ```
 Raw CSV (300K rows)
     ↓
-Currency Detection (heuristic-based)
+Currency Detection (auto-detect symbols or ask user if ambiguous)
     ↓
 Airline Cleaning (regex deduplication + whitelist)
     ↓
@@ -189,7 +191,7 @@ python main_en.py   # All messages in English
 
 ### **Graph Labels** (Always English)
 - Standard international format
-- Currency symbols auto-detected (€, $, ₹, £)
+- Currency symbols detected or selected by user (€, $, ₹, £)
 - Month names translated in data display
 
 ---
@@ -208,8 +210,17 @@ $ python main_it.py
 Scelta (1/2/3): 1
 
 📊 Caricamento dataset...
-💰 Valuta rilevata: $
-✅ Dataset caricato: 300153 righe, 11 colonne
+
+[?] Valuta non rilevata automaticamente.
+Scegli la valuta:
+  1. € (Euro)
+  2. $ (Dollaro)
+  3. ₹ (Rupia Indiana)
+  4. £ (Sterlina)
+Scelta (1/2/3/4): 2
+
+💰 Valuta selezionata: $
+✅ Dataset unificato caricato: 300153 righe, 11 colonne
 
 ============================================================
 📈 ANALISI ESPLORATIVA DEI DATI
@@ -222,8 +233,8 @@ Scelta (1/2/3): 1
 🤖 TRAINING MODELLO ML
 ============================================================
 [*] Training Random Forest Regressor...
-    MAE: €161.27
-    RMSE: €871.33
+    MAE: $161.27
+    RMSE: $871.33
     R²: 0.9987
 
 ✅ ANALISI COMPLETATA CON SUCCESSO!
@@ -295,7 +306,7 @@ Total Runtime: ~50-80 seconds
 ### **Seasonality Patterns**
 - **Cheapest**: February, September
 - **Most Expensive**: December, June
-- **Price Range**: €2,000 - €100,000+
+- **Price Range**: ₹2,000 - ₹100,000+* (currency-dependent)
 
 ### **Best Practices**
 - ✅ Book flights 30+ days in advance
